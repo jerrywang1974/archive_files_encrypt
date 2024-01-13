@@ -4,6 +4,14 @@ import os
 import pickle
 from datetime import datetime
 import subprocess,argparse
+import platform
+
+NAS_Root = "X:\\DailyBackup\\172.27.21.111\\"
+
+def is_windows():
+    return os.name == 'nt'
+
+
 
 class File:
     def __init__(self, path):
@@ -51,22 +59,35 @@ def get_args():
     args = parser.parse_args()
     return args
 def save_data(file_data):
-    with open("file_data.pkl", "wb") as f:
+    with open(NAS_Root+"file_data.pkl", "wb") as f:
         pickle.dump(file_data, f)
 
 def load_data():
     try:
-        with open("file_data.pkl", "rb") as f:
+        with open(NAS_Root+"file_data.pkl", "rb") as f:
             return pickle.load(f)
     except FileNotFoundError:
         return []
-def compress_encrypt_files(files, zip_filename, password):
-    # Compress files using zipfile without encryption
-    with zipfile.ZipFile(zip_filename, 'w') as zipf:
-        for file in files:
-            zipf.write(file)
-    # Call 'zip' CLI to apply password
-    subprocess.run(['zip', '-P', password, '-r', zip_filename, *files])
+
+def compress_encrypt_files(files_list, zip_filename, password):
+    if platform.system() == 'Windows':
+        CHUNK_SIZE = 1000  # Adjust as needed
+        for i in range(0, len(files_list), CHUNK_SIZE):
+            chunk = files_list[i:i+CHUNK_SIZE]
+            file_list_file = 'files_list.txt'
+            with open(file_list_file, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(chunk))
+            subprocess.run(['7z', 'a', '-p' + password, '-y', '-spf', '-scsUTF-8', zip_filename, '@files_list.txt'])
+            if os.path.exists(file_list_file):
+                os.remove(file_list_file)
+
+    elif platform.system() == 'Linux':
+        # In linux we can use the original approach
+        subprocess.run(['zip', '-P', password, '-r', zip_filename] + files_list)
+
+    else:
+        raise Exception('Unsupported OS')
+
 def get_directories_from_config():
     config = configparser.ConfigParser()
     config.read('config.ini')
@@ -99,7 +120,7 @@ def backup(backup_type):
         #                print(f"Removed file detected - {file_path}:\n\tHash: {old_dict[file_path]}")
         #                oper_list.append(File(file_path))
         if len(oper_list) > 0:
-            zip_filename = f"{machine_name}_ADD_MODIFY_{datetime.now().strftime('%Y%m%d-%H%M')}.zip"
+            zip_filename = f"{NAS_Root}{machine_name}_ADD_MODIFY_{datetime.now().strftime('%Y%m%d-%H%M')}.zip"
             files_list = [f.path for f in oper_list]
             compress_encrypt_files(files_list, zip_filename, password)
             oper_list.extend(old_data)  # renamed 'append' to 'extend'
@@ -113,7 +134,7 @@ def backup(backup_type):
             print(f"Last Updated: {file.updated_date.strftime('%Y-%m-%d %H:%M:%S')}")
             print(f"SHA-256 Hash: {file.hash}")
             print("=====================================")
-        zip_filename = f"{machine_name}_FULL_{datetime.now().strftime('%Y%m%d-%H%M')}.zip"
+        zip_filename = f"{NAS_Root}{machine_name}_FULL_{datetime.now().strftime('%Y%m%d-%H%M')}.zip"
         files_list = [f.path for f in files]
         compress_encrypt_files(files_list, zip_filename, password)
         #files=files.append(oper_list)

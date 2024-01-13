@@ -1,0 +1,26 @@
+﻿Updating archive: X:\DailyBackup\172.27.21.111\TPOS_FULL_20240113-0755.zip
+
+Keep old data in archive: 500 files, 226752581 bytes (217 MiB)
+Add new data to archive: 110 files, 166705338 bytes (159 MiB)
+
+
+Files read from disk: 110
+Archive size: 374045321 bytes (357 MiB)
+Everything is Ok
+
+C:\backup_script>c:\python311\python main.py --update
+
+C:\backup_script>c:\python311\python main.py --update
+Added file detected - D:\Java\tpos-server\deploy\uploadFiles\新增資料夾\task.bat:
+        Hash: 2d91dc9c5cd20a7b8d10ac447bb4686f424f5c7854580e19e04bb3c37d86e94b
+Added file detected - D:\Java\tpos-server\deploy\uploadFiles\新增資料夾\config.ini:
+        Hash: 04a156a13301c0bfe258624ebc30f6e31d6998bac71a5934c9fe7d1b7ad3f118
+
+7-Zip 23.01 (x64) : Copyright (c) 1999-2023 Igor Pavlov : 2023-06-20
+
+
+
+Command Line Error:
+Incorrect item in listfile.
+Check charset encoding and -scs switch.
+files_list.txt
